@@ -6,7 +6,7 @@
       <div class="small">
         <line-chart :chart-data="datacollection"></line-chart>
       </div>
-      <keyfigures :stats="statEntries"></keyfigures>
+      <keyfigures></keyfigures>
     </div>
   </div>
 </template>
@@ -73,18 +73,7 @@ export default class EpidemyCanvas extends Vue {
   durationOfIllness!: number;
 
   @Prop()
-  deathRate!: number;
-
-  @Prop()
-  deathRateWithoutTreatment!: number;
-
-  @Prop()
-  hospitalCapacity!: number;
-
-  @Prop()
   socialDistancingRate!: number;
-
-  statEntries!: StatEntry[];
 
   datacollection!: ChartData;
 
@@ -96,7 +85,6 @@ export default class EpidemyCanvas extends Vue {
 
   constructor() {
     super();
-    this.statEntries = [];
     this.datacollection = {};
   }
   mounted(): void {
@@ -120,7 +108,7 @@ export default class EpidemyCanvas extends Vue {
   }
 
   updateStats() {
-    this.statEntries.push(this.country.getStats());
+    this.$store.commit("addStatEntry", this.country.getStats());
     const datasets: ChartDataSets[] = [];
     // Prepare datasets
     for (const healthState in HealthState) {
@@ -131,7 +119,7 @@ export default class EpidemyCanvas extends Vue {
         label: healthStateConfig[healthState].label,
         data: []
       };
-      this.statEntries.forEach(e => {
+      this.$store.state.statEntries.forEach((e: StatEntry) => {
         if (dataset.data) {
           dataset.data.push(e.populations[healthState]);
         }
@@ -147,13 +135,14 @@ export default class EpidemyCanvas extends Vue {
 
   init(): void {
     this.country.people = [];
-    this.statEntries = [];
+    this.$store.commit("clearStats");
     this.country.createPeople(
       this.population,
       this.radius,
       this.durationOfIllness,
-      this.deathRate,
-      this.socialDistancingRate
+      this.$store.state.deathRate,
+      this.socialDistancingRate,
+      this.$store
     );
     this.country.infectPeople(1);
   }

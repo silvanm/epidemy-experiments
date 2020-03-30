@@ -1,5 +1,5 @@
 import { Vector, Position } from "@/Utils";
-import EventBus from "@/event-bus";
+import { Store } from "vuex";
 
 export enum HealthState {
   Healthy,
@@ -17,6 +17,7 @@ export class Person {
   durationOfIllness: number;
   deathRate: number;
   atHome: boolean;
+  store: Store<any>;
   private socialDistancingRate = 0;
 
   constructor(
@@ -24,7 +25,8 @@ export class Person {
     speed: Vector,
     radius: number,
     durationOfIllness: number,
-    deathRate: number
+    deathRate: number,
+    store: Store<any>
   ) {
     this.position = position;
     this.speed = speed;
@@ -34,12 +36,13 @@ export class Person {
     this.durationOfIllness = durationOfIllness;
     this.deathRate = deathRate;
     this.atHome = false;
+    this.store = store;
   }
 
   start() {
     window.setTimeout(() => {
-        this.updateState();
-      }, Math.random() * 1000);
+      this.updateState();
+    }, Math.random() * 1000);
   }
 
   updateState(initial = false) {
@@ -59,13 +62,26 @@ export class Person {
     this.socialDistancingRate = r;
   }
 
+  private getDeathRate(): number {
+    let deathRate = this.store.state.deathRate;
+    if (this.store.state.statEntries.length > 0) {
+      const lastStatEntry = this.store.state.statEntries[
+        this.store.state.statEntries.length - 1
+      ];
+      if (lastStatEntry.populations[HealthState.Infected] > this.store.state.hospitalCapacity) {
+        deathRate = this.store.state.deathRateWithoutTreatment;
+      }
+    }
+    return deathRate;
+  }
+
   infect() {
     // infection does only work if someone is healthy
     if (this.state === HealthState.Healthy) {
       this.state = HealthState.Infected;
       this.infectedAt = Date.now();
       window.setTimeout(() => {
-        if (Math.random() < this.deathRate / 100) {
+        if (Math.random() < this.getDeathRate() / 100) {
           this.state = HealthState.Dead;
           this.speed = { x: 0, y: 0 };
         } else {

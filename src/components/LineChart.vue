@@ -1,6 +1,7 @@
 <script>
 import { Line, mixins } from "vue-chartjs";
 const { reactiveProp } = mixins;
+import chartjsPluginAnnotation from "chartjs-plugin-annotation";
 
 export default {
   extends: Line,
@@ -9,6 +10,22 @@ export default {
     options: {
       default() {
         return {
+          annotation: {
+            drawTime: "afterDatasetsDraw", // (default)
+
+            // Array of annotation configuration objects
+            // See below for detailed descriptions of the annotation options
+            annotations: [
+              {
+                type: "line",
+                mode: "horizontal",
+                scaleID: "y-axis-0",
+                value: 25,
+                borderColor: "red",
+                borderWidth: 2
+              }
+            ]
+          },
           elements: {
             point: {
               radius: 0
@@ -30,7 +47,7 @@ export default {
                 stacked: true,
                 ticks: {
                   suggestedMax: 100,
-                  min: 0,
+                  min: 0
                 }
               }
             ]

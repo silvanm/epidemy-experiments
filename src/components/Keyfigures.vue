@@ -1,6 +1,13 @@
 <template>
   <div>
-    <table v-if="stats.length > 0">
+    <table v-if="hasStats">
+      <tr>
+        <th>Healthy</th>
+        <td>
+          {{ lastEntry.populations[0] }}
+        </td>
+      </tr>
+
       <tr>
         <th>Infected</th>
         <td>
@@ -15,34 +22,51 @@
       </tr>
       <tr>
         <th>Dead</th>
-        <td>
-          {{ lastEntry.populations[3] }}
-        </td>
+        <td>{{ lastEntry.populations[3] }}</td>
+      </tr>
+      <tr>
+        <th>Available Hospital Beds</th>
+        <td><span v-if="hospitalBeds === 0" class="blink_me">⚠️</span>{{ hospitalBeds }}</td>
       </tr>
     </table>
   </div>
 </template>
 <script lang="ts">
-import Component from "vue-class-component";
-import { Prop } from "vue-property-decorator";
 import Vue from "vue";
+import Component from "vue-class-component";
 import { StatEntry } from "@/Stats";
 
 @Component
 export default class Keyfigures extends Vue {
-  @Prop()
-  stats!: StatEntry[];
+  get hasStats(): boolean {
+    return this.$store.state && this.$store.state.statEntries.length > 0;
+  }
 
   get lastEntry(): StatEntry | undefined {
-    return this.stats[this.stats.length - 1];
+    return this.$store.state.statEntries[
+      this.$store.state.statEntries.length - 1
+    ];
+  }
+
+  get hospitalBeds(): number {
+    return this.$store.getters.hospitalBeds;
   }
 }
 </script>
 <style scoped lang="scss">
-  th {
-    text-align: left;
+th {
+  text-align: left;
+}
+td {
+  text-align: right;
+}
+.blink_me {
+  animation: blinker 1s linear infinite;
+}
+
+@keyframes blinker {
+  50% {
+    opacity: 0;
   }
-  td {
-    text-align: right;
-  }
+}
 </style>

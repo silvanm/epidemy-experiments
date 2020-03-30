@@ -7,10 +7,7 @@
       :population="population"
       :radius="5"
       :duration-of-illness="durationOfIllness"
-      :death-rate="deathRate"
-      :death-rate-without-treatment="deathRateWithoutTreatment"
       :social-distancing-rate="socialDistancingRate"
-      :hospital-capacity="hospitalCapacity"
     />
     <div id="controls">
       <div class="control-row">
@@ -20,7 +17,12 @@
       </div>
       <div class="control-row">
         <label>Duration of Illness</label>
-        <vue-slider v-model="durationOfIllness" :min="0" :max="10" width="200px" />
+        <vue-slider
+          v-model="durationOfIllness"
+          :min="0"
+          :max="10"
+          width="200px"
+        />
         <div>{{ durationOfIllness }}s</div>
       </div>
       <div class="control-row">
@@ -30,17 +32,32 @@
       </div>
       <div class="control-row">
         <label>Death Rate without Treatment</label>
-        <vue-slider v-model="deathRateWithoutTreatment" :min="0" :max="100" width="200px" />
+        <vue-slider
+          v-model="deathRateWithoutTreatment"
+          :min="0"
+          :max="100"
+          width="200px"
+        />
         <div>{{ deathRateWithoutTreatment }}%</div>
       </div>
       <div class="control-row">
         <label>Hospital Capacity</label>
-        <vue-slider v-model="hospitalCapacity" :min="0" :max="1000" width="200px" />
+        <vue-slider
+          v-model="hospitalCapacity"
+          :min="0"
+          :max="1000"
+          width="200px"
+        />
         <div>{{ hospitalCapacity }} ppl</div>
       </div>
       <div class="control-row">
         <label>Social Distancing Rate</label>
-        <vue-slider v-model="socialDistancingRate" :min="0" :max="100" width="200px" />
+        <vue-slider
+          v-model="socialDistancingRate"
+          :min="0"
+          :max="100"
+          width="200px"
+        />
         <div>{{ socialDistancingRate }}%</div>
       </div>
       <div class="control-row">
@@ -56,6 +73,13 @@ import EpidemyCanvas from "@/components/EpidemyCanvas.vue";
 import VueSlider from "vue-slider-component";
 import "vue-slider-component/theme/antd.css";
 import EventBus from "@/event-bus";
+import { Store } from "vuex";
+
+interface Getter {
+  get(): number;
+  set(value: number): void;
+  $store: Store<any>;
+}
 
 export default {
   name: "Home",
@@ -67,11 +91,34 @@ export default {
     return {
       population: 100,
       durationOfIllness: 10,
-      deathRate: 5,
-      deathRateWithoutTreatment: 20,
-      socialDistancingRate: 0,
-      hospitalCapacity: 50
+      socialDistancingRate: 0
     };
+  },
+  computed: {
+    hospitalCapacity: {
+      get(): number {
+        return this.$store.state.hospitalCapacity;
+      },
+      set(value: number) {
+        this.$store.commit("updateHospitalCapacity", value);
+      }
+    } as Getter,
+    deathRate: {
+      get(): number {
+        return this.$store.state.deathRate;
+      },
+      set(value: number) {
+        this.$store.commit("updateDeathRate", value);
+      }
+    } as Getter,
+    deathRateWithoutTreatment: {
+      get(): number {
+        return this.$store.state.deathRateWithoutTreatment;
+      },
+      set(value: number) {
+        this.$store.commit("updateDeathRateWithoutTreatment", value);
+      }
+    } as Getter
   },
   methods: {
     start() {
@@ -88,7 +135,7 @@ export default {
 .home {
   display: flex;
   flex-direction: row;
-  flex-wrap: wrap
+  flex-wrap: wrap;
 }
 #controls {
   width: 500px;
@@ -97,13 +144,14 @@ export default {
   display: flex;
   flex-direction: row;
   margin: 5px;
-  label, div {
+  label,
+  div {
     padding: 0 10px;
   }
 
   label {
     text-align: right;
-    width: 200px
+    width: 200px;
   }
 }
 </style>

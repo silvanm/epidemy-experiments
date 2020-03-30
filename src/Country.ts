@@ -1,6 +1,7 @@
 import { HealthState, Person } from "@/Person";
 import { Position, Vector } from "@/Utils";
 import { StatEntry } from "@/Stats";
+import { Store } from "vuex";
 
 export class Country {
   width: number;
@@ -20,7 +21,8 @@ export class Country {
     radius: number,
     durationOfIllness: number,
     deathRate: number,
-    socialDistancingRate: number
+    socialDistancingRate: number,
+    store: Store<any>
   ): void {
     for (let i = 0; i < population; i++) {
       const position: Position = {
@@ -39,7 +41,8 @@ export class Country {
         speed,
         radius,
         durationOfIllness,
-        deathRate
+        deathRate,
+        store
       );
       person.setSocialDistancingRate(socialDistancingRate);
       person.start();

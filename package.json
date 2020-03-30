@@ -10,6 +10,7 @@
   "dependencies": {
     "@types/chart.js": "^2.9.16",
     "chart.js": "^2.9.3",
+    "chartjs-plugin-annotation": "^0.5.7",
     "core-js": "^3.6.4",
     "konva": "^4.2.0",
     "register-service-worker": "^1.6.2",

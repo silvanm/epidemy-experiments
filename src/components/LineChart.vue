@@ -29,9 +29,8 @@ export default {
               {
                 stacked: true,
                 ticks: {
-                  max: 100,
+                  suggestedMax: 100,
                   min: 0,
-                  stepSize: 0.5
                 }
               }
             ]

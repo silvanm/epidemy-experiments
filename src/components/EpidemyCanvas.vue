@@ -6,6 +6,7 @@
       <div class="small">
         <line-chart :chart-data="datacollection"></line-chart>
       </div>
+      <keyfigures :stats="statEntries"></keyfigures>
     </div>
   </div>
 </template>
@@ -20,6 +21,7 @@ import LineChart from "./LineChart.vue";
 import { ChartData, ChartDataSets } from "chart.js";
 import { HealthState } from "@/Person";
 import EventBus from "@/event-bus";
+import Keyfigures from "@/components/Keyfigures.vue";
 
 interface HealthStateConfig {
   [k: number]: { color: string; displayInGraph: boolean; label: string };
@@ -27,7 +29,7 @@ interface HealthStateConfig {
 
 const healthStateConfig: HealthStateConfig = {
   [HealthState.Healthy]: {
-    color: "green",
+    color: "lightgreen",
     displayInGraph: false,
     label: "Healthy"
   },
@@ -36,11 +38,17 @@ const healthStateConfig: HealthStateConfig = {
     displayInGraph: true,
     label: "Infected"
   },
-  [HealthState.Healed]: { color: "gray", displayInGraph: true, label: "Healed" }
+  [HealthState.Healed]: {
+    color: "darkgreen",
+    displayInGraph: true,
+    label: "Healed"
+  },
+  [HealthState.Dead]: { color: "black", displayInGraph: true, label: "Dead" }
 };
 
 @Component({
   components: {
+    Keyfigures,
     LineChart
   }
 })
@@ -60,6 +68,21 @@ export default class EpidemyCanvas extends Vue {
 
   @Prop()
   radius!: number;
+
+  @Prop()
+  durationOfIllness!: number;
+
+  @Prop()
+  deathRate!: number;
+
+  @Prop()
+  deathRateWithoutTreatment!: number;
+
+  @Prop()
+  hospitalCapacity!: number;
+
+  @Prop()
+  socialDistancingRate!: number;
 
   statEntries!: StatEntry[];
 
@@ -125,7 +148,13 @@ export default class EpidemyCanvas extends Vue {
   init(): void {
     this.country.people = [];
     this.statEntries = [];
-    this.country.createPeople(this.population, this.radius);
+    this.country.createPeople(
+      this.population,
+      this.radius,
+      this.durationOfIllness,
+      this.deathRate,
+      this.socialDistancingRate
+    );
     this.country.infectPeople(1);
   }
 
@@ -148,7 +177,7 @@ export default class EpidemyCanvas extends Vue {
 
   draw(): void {
     const ctx = this.context;
-    this.country.updatePosition();
+    this.country.updatePosition(this.socialDistancingRate);
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.country.people.forEach(person => {
       ctx.beginPath();

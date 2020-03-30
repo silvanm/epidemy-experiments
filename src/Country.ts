@@ -15,7 +15,13 @@ export class Country {
     this.lastTs = Date.now();
   }
 
-  createPeople(population: number, radius: number): void {
+  createPeople(
+    population: number,
+    radius: number,
+    durationOfIllness: number,
+    deathRate: number,
+    socialDistancingRate: number
+  ): void {
     for (let i = 0; i < population; i++) {
       const position: Position = {
         x: Math.random() * this.width,
@@ -28,7 +34,15 @@ export class Country {
         x: Math.cos(direction) * 0.1,
         y: Math.sin(direction) * 0.1
       };
-      const person = new Person(position, speed, radius);
+      const person = new Person(
+        position,
+        speed,
+        radius,
+        durationOfIllness,
+        deathRate
+      );
+      person.setSocialDistancingRate(socialDistancingRate);
+      person.start();
       this.people.push(person);
     }
   }
@@ -74,12 +88,17 @@ export class Country {
     }
   }
 
-  updatePosition(): void {
+  updatePosition(socialDistancingRate: number): void {
     const now = Date.now();
     const delta = now - this.lastTs;
     this.people.forEach((person: Person) => {
-      person.position.x += person.speed.x * delta;
-      person.position.y += person.speed.y * delta;
+      person.setSocialDistancingRate(socialDistancingRate);
+      if (person.atHome) {
+        // don't move if person is at home
+      } else {
+        person.position.x += person.speed.x * delta;
+        person.position.y += person.speed.y * delta;
+      }
 
       if (person.position.y < person.radius) {
         person.position.y =

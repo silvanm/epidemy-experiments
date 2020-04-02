@@ -4,7 +4,10 @@
     <div id="container">
       <canvas ref="canvas" :width="width" :height="height"></canvas>
       <div class="small">
-        <line-chart :chart-data="datacollection"></line-chart>
+        <line-chart
+          :chart-data="datacollection"
+          :options="chartOptions()"
+        ></line-chart>
       </div>
       <keyfigures></keyfigures>
     </div>
@@ -22,29 +25,7 @@ import { ChartData, ChartDataSets } from "chart.js";
 import { HealthState } from "@/Person";
 import EventBus from "@/event-bus";
 import Keyfigures from "@/components/Keyfigures.vue";
-
-interface HealthStateConfig {
-  [k: number]: { color: string; displayInGraph: boolean; label: string };
-}
-
-const healthStateConfig: HealthStateConfig = {
-  [HealthState.Healthy]: {
-    color: "lightgreen",
-    displayInGraph: false,
-    label: "Healthy"
-  },
-  [HealthState.Infected]: {
-    color: "orange",
-    displayInGraph: true,
-    label: "Infected"
-  },
-  [HealthState.Healed]: {
-    color: "darkgreen",
-    displayInGraph: true,
-    label: "Healed"
-  },
-  [HealthState.Dead]: { color: "black", displayInGraph: true, label: "Dead" }
-};
+import {borderPosXRelative, borderWidth, healthStateConfig} from "@/config/config";
 
 @Component({
   components: {
@@ -91,25 +72,25 @@ export default class EpidemyCanvas extends Vue {
     this.canvas = this.$refs["canvas"] as HTMLCanvasElement;
     this.context = this.canvas.getContext("2d") as CanvasRenderingContext2D;
 
-    this.country = new Country(this.width, this.height);
+    this.country = new Country(this.width, this.height, [], this.$store);
     this.init();
-
-    for (let i = 0; i < 100; i++) {
-      this.labels.push(i);
-    }
 
     EventBus.$on("start", () => {
       this.start();
-    });
-
-    EventBus.$on("restart", () => {
-      this.init();
     });
   }
 
   updateStats() {
     this.$store.commit("addStatEntry", this.country.getStats());
     const datasets: ChartDataSets[] = [];
+    this.labels = [];
+    for (
+      let i = 0;
+      i < Math.max(100, this.$store.state.statEntries.length);
+      i++
+    ) {
+      this.labels.push(i);
+    }
     // Prepare datasets
     for (const healthState in HealthState) {
       if (isNaN(Number(healthState))) continue;
@@ -148,6 +129,7 @@ export default class EpidemyCanvas extends Vue {
   }
 
   start() {
+    this.init();
     this.isRunning = true;
     this.draw();
     this.updateStats();
@@ -159,9 +141,24 @@ export default class EpidemyCanvas extends Vue {
     }, 500);
   }
 
-  restart() {
-    this.init();
-    this.start();
+  private drawBorder(): void {
+    const ctx = this.context;
+    const borderHeight = Math.floor(this.height * this.$store.state.borderClosingRate / 100 * 0.5);
+    ctx.beginPath();
+    ctx.fillStyle = 'black';
+    ctx.rect(
+      Math.floor(this.width * borderPosXRelative),
+      0,
+      borderWidth,
+      borderHeight
+    );
+    ctx.rect(
+      Math.floor(this.width * borderPosXRelative),
+      this.height - borderHeight,
+      borderWidth,
+      borderHeight
+    );
+    ctx.fill();
   }
 
   draw(): void {
@@ -180,11 +177,58 @@ export default class EpidemyCanvas extends Vue {
       ctx.fillStyle = healthStateConfig[person.state].color;
       ctx.fill();
     });
+
+    this.drawBorder();
+
     if (this.isRunning) {
       window.requestAnimationFrame(() => {
         this.draw();
       });
     }
+  }
+
+  chartOptions() {
+    return {
+      annotation: {
+        drawTime: "afterDatasetsDraw",
+        annotations: [
+          {
+            type: "line",
+            mode: "horizontal",
+            scaleID: "y-axis-0",
+            value: this.$store.state.hospitalCapacity,
+            borderColor: "red",
+            borderWidth: 2
+          }
+        ]
+      },
+      elements: {
+        point: {
+          radius: 0
+        }
+      },
+      scales: {
+        xAxes: [
+          {
+            ticks: {
+              display: false
+            },
+            gridLines: {
+              display: false
+            }
+          }
+        ],
+        yAxes: [
+          {
+            stacked: true,
+            ticks: {
+              suggestedMax: this.$store.state.population,
+              min: 0
+            }
+          }
+        ]
+      }
+    };
   }
 }
 </script>

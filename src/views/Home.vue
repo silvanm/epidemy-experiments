@@ -12,12 +12,19 @@
     <div id="controls">
       <div class="control-row">
         <label>Population</label>
-        <vue-slider v-model="population" :min="0" :max="1000" width="200px" />
+        <vue-slider
+          ref="population"
+          v-model="population"
+          :min="0"
+          :max="1000"
+          width="200px"
+        />
         <div>{{ population }}s</div>
       </div>
       <div class="control-row">
         <label>Duration of Illness</label>
         <vue-slider
+          ref="durationOfIllness"
           v-model="durationOfIllness"
           :min="0"
           :max="10"
@@ -27,12 +34,19 @@
       </div>
       <div class="control-row">
         <label>Death Rate</label>
-        <vue-slider v-model="deathRate" :min="0" :max="100" width="200px" />
+        <vue-slider
+          ref="deathRate"
+          v-model="deathRate"
+          :min="0"
+          :max="100"
+          width="200px"
+        />
         <div>{{ deathRate }}%</div>
       </div>
       <div class="control-row">
         <label>Death Rate without Treatment</label>
         <vue-slider
+          ref="deathRateWithoutTreatment"
           v-model="deathRateWithoutTreatment"
           :min="0"
           :max="100"
@@ -43,6 +57,7 @@
       <div class="control-row">
         <label>Hospital Capacity</label>
         <vue-slider
+          ref="hospitalCapacity"
           v-model="hospitalCapacity"
           :min="0"
           :max="1000"
@@ -53,6 +68,7 @@
       <div class="control-row">
         <label>Social Distancing Rate</label>
         <vue-slider
+          ref="socialDistancingRate"
           v-model="socialDistancingRate"
           :min="0"
           :max="100"
@@ -61,10 +77,24 @@
         <div>{{ socialDistancingRate }}%</div>
       </div>
       <div class="control-row">
+        <label>Border Closing Rate</label>
+        <vue-slider
+          ref="borderClosingRate"
+          v-model="borderClosingRate"
+          :min="0"
+          :max="100"
+          width="200px"
+        />
+        <div>{{ borderClosingRate }}%</div>
+      </div>
+      <div class="control-row">
         <button @click="start()">Start</button>
-        <button @click="restart()">Restart</button>
       </div>
     </div>
+    <scenarios
+      @start="start()"
+      @scenario-item-step="scenarioItemStep"
+    ></scenarios>
   </div>
 </template>
 
@@ -74,8 +104,10 @@ import VueSlider from "vue-slider-component";
 import "vue-slider-component/theme/antd.css";
 import EventBus from "@/event-bus";
 import { Store } from "vuex";
+import Scenarios from "@/components/Scenarios.vue";
+import { ScenarioItemStep } from "@/config/scenarios";
 
-interface Getter {
+interface StoreAccessors {
   get(): number;
   set(value: number): void;
   $store: Store<any>;
@@ -84,12 +116,12 @@ interface Getter {
 export default {
   name: "Home",
   components: {
+    Scenarios,
     EpidemyCanvas,
     VueSlider
   },
   data() {
     return {
-      population: 100,
       durationOfIllness: 10,
       socialDistancingRate: 0
     };
@@ -102,7 +134,7 @@ export default {
       set(value: number) {
         this.$store.commit("updateHospitalCapacity", value);
       }
-    } as Getter,
+    } as StoreAccessors,
     deathRate: {
       get(): number {
         return this.$store.state.deathRate;
@@ -110,7 +142,7 @@ export default {
       set(value: number) {
         this.$store.commit("updateDeathRate", value);
       }
-    } as Getter,
+    } as StoreAccessors,
     deathRateWithoutTreatment: {
       get(): number {
         return this.$store.state.deathRateWithoutTreatment;
@@ -118,15 +150,30 @@ export default {
       set(value: number) {
         this.$store.commit("updateDeathRateWithoutTreatment", value);
       }
-    } as Getter
+    } as StoreAccessors,
+    population: {
+      get(): number {
+        return this.$store.state.population;
+      },
+      set(value: number) {
+        this.$store.commit("updatePopulation", value);
+      }
+    } as StoreAccessors,
+    borderClosingRate: {
+      get(): number {
+        return this.$store.state.borderClosingRate;
+      },
+      set(value: number) {
+        this.$store.commit("updateBorderClosingRate", value);
+      }
+    } as StoreAccessors
   },
   methods: {
     start() {
-      console.log("start");
       EventBus.$emit("start");
     },
-    restart() {
-      EventBus.$emit("restart");
+    scenarioItemStep(e: ScenarioItemStep) {
+      this.$refs[e.param].setValue(e.value);
     }
   }
 };

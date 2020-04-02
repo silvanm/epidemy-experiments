@@ -1,19 +1,28 @@
 import { HealthState, Person } from "@/Person";
-import { Position, Vector } from "@/Utils";
+import { Position, resolveCollision, Vector } from "@/Utils";
 import { StatEntry } from "@/Stats";
 import { Store } from "vuex";
+import { StoreState } from "@/store";
+import { borderPosXRelative, borderWidth } from "@/config/config";
 
 export class Country {
   width: number;
   height: number;
   people: Person[];
   lastTs: number;
+  store: Store<StoreState>;
 
-  constructor(width: number, height: number, people: Person[] = []) {
+  constructor(
+    width: number,
+    height: number,
+    people: Person[] = [],
+    store: Store<StoreState>
+  ) {
     this.people = people;
     this.width = width;
     this.height = height;
     this.lastTs = Date.now();
+    this.store = store;
   }
 
   createPeople(
@@ -22,7 +31,7 @@ export class Country {
     durationOfIllness: number,
     deathRate: number,
     socialDistancingRate: number,
-    store: Store<any>
+    store: Store<StoreState>
   ): void {
     for (let i = 0; i < population; i++) {
       const position: Position = {
@@ -33,8 +42,8 @@ export class Country {
       const direction = Math.PI * 2 * Math.random();
 
       const speed: Vector = {
-        x: Math.cos(direction) * 0.1,
-        y: Math.sin(direction) * 0.1
+        x: Math.cos(direction) * 0.08,
+        y: Math.sin(direction) * 0.08
       };
       const person = new Person(
         position,
@@ -70,11 +79,18 @@ export class Country {
 
   private checkCollisions(): void {
     for (let i = 0; i < this.people.length; i++) {
+      if (this.people[i].state == HealthState.Dead) continue;
+
       for (let j = i + 1; j < this.people.length; j++) {
+        if (this.people[j].state == HealthState.Dead) continue;
+
         if (
           Country.distance(this.people[i], this.people[j]) <
           Math.pow(this.people[i].radius, 2)
         ) {
+          resolveCollision(this.people[i], this.people[j]);
+
+          // Collision
           if (
             this.people[i].state == HealthState.Infected &&
             this.people[j].state == HealthState.Healthy
@@ -103,30 +119,70 @@ export class Country {
         person.position.y += person.speed.y * delta;
       }
 
-      if (person.position.y < person.radius) {
-        person.position.y =
-          -(person.position.y - person.radius) + person.radius;
-        person.speed.y = -person.speed.y;
-      }
-      if (person.position.x < person.radius) {
-        person.position.x =
-          -(person.position.x - person.radius) + person.radius;
-        person.speed.x = -person.speed.x;
-      }
-      if (person.position.x > this.width - person.radius) {
-        person.position.x =
-          2 * this.width - (person.position.x + person.radius) - person.radius;
-        person.speed.x = -person.speed.x;
-      }
-      if (person.position.y > this.height - person.radius) {
-        person.position.y =
-          2 * this.height - (person.position.y + person.radius) - person.radius;
-        person.speed.y = -person.speed.y;
-      }
+      this._handleWallCollision(person);
+      this._handleBoundaryCollision(person);
     });
     this.lastTs = now;
 
     this.checkCollisions();
+  }
+
+  private _handleWallCollision(person: Person) {
+    // Top wall
+    if (person.position.y < person.radius) {
+      person.position.y = -(person.position.y - person.radius) + person.radius;
+      person.speed.y = -person.speed.y;
+    }
+
+    // Left wall
+    if (person.position.x < person.radius) {
+      person.position.x = -(person.position.x - person.radius) + person.radius;
+      person.speed.x = -person.speed.x;
+    }
+
+    // right wall
+    if (person.position.x > this.width - person.radius) {
+      person.position.x =
+        2 * this.width - (person.position.x + person.radius) - person.radius;
+      person.speed.x = -person.speed.x;
+    }
+
+    // bottom wall
+    if (person.position.y > this.height - person.radius) {
+      person.position.y =
+        2 * this.height - (person.position.y + person.radius) - person.radius;
+      person.speed.y = -person.speed.y;
+    }
+  }
+
+  private _handleBoundaryCollision(person: Person) {
+    const borderHeight = Math.floor(
+      ((this.height * this.store.state.borderClosingRate) / 100) * 0.5
+    );
+    const borderLeftEdge = Math.floor(this.width * borderPosXRelative);
+
+    // slip between the gap
+    if (
+      person.position.y > borderHeight &&
+      person.position.y < this.height - borderHeight
+    )
+      return;
+
+    if (
+      // move to the right
+      person.speed.x > 0 &&
+      person.position.x + person.radius > borderLeftEdge &&
+      person.position.x + person.radius < borderLeftEdge + borderWidth / 2
+    ) {
+      person.speed.x = -person.speed.x;
+    } else if (
+      // move to the left
+      person.speed.x < 0 &&
+      person.position.x - person.radius < borderLeftEdge + borderWidth &&
+      person.position.x - person.radius > borderLeftEdge + borderWidth / 2
+    ) {
+      person.speed.x = -person.speed.x;
+    }
   }
 
   getStats(): StatEntry {

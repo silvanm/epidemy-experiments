@@ -68,11 +68,19 @@ export class Person {
       const lastStatEntry = this.store.state.statEntries[
         this.store.state.statEntries.length - 1
       ];
-      if (lastStatEntry.populations[HealthState.Infected] > this.store.state.hospitalCapacity) {
+      if (
+        lastStatEntry.populations[HealthState.Infected] >
+        this.store.state.hospitalCapacity
+      ) {
         deathRate = this.store.state.deathRateWithoutTreatment;
       }
     }
     return deathRate;
+  }
+
+  die() {
+    this.state = HealthState.Dead;
+    this.speed = { x: 0, y: 0 };
   }
 
   infect() {
@@ -82,8 +90,7 @@ export class Person {
       this.infectedAt = Date.now();
       window.setTimeout(() => {
         if (Math.random() < this.getDeathRate() / 100) {
-          this.state = HealthState.Dead;
-          this.speed = { x: 0, y: 0 };
+          this.die();
         } else {
           this.state = HealthState.Healed;
         }

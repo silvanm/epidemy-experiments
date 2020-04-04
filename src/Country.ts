@@ -57,6 +57,24 @@ export class Country {
       person.start();
       this.people.push(person);
     }
+
+    // Adjust number of users with app tracking
+    store.watch(
+      state => {
+        return state.appTrackingPenetration;
+      },
+      v => {
+        this.updateAppTrackingState(v);
+      }
+    );
+
+    this.updateAppTrackingState(store.state.appTrackingPenetration);
+  }
+
+  private updateAppTrackingState(v: number) {
+    for (let i = 0; i < this.people.length; i++) {
+      this.people[i].hasAppTracking = i < v;
+    }
   }
 
   infectPeople(number: number): void {
@@ -84,24 +102,33 @@ export class Country {
       for (let j = i + 1; j < this.people.length; j++) {
         if (this.people[j].state == HealthState.Dead) continue;
 
+        const someoneHasAppTracking =
+          this.people[i].hasAppTracking || this.people[j].hasAppTracking;
+
         if (
           Country.distance(this.people[i], this.people[j]) <
-          Math.pow(this.people[i].radius, 2)
+          Math.pow(
+            this.people[i].logicalRadius + this.people[j].logicalRadius,
+            2
+          )
         ) {
           resolveCollision(this.people[i], this.people[j]);
 
-          // Collision
-          if (
-            this.people[i].state == HealthState.Infected &&
-            this.people[j].state == HealthState.Healthy
-          )
-            this.people[j].infect();
+          // Someone with app tracking will not infect anyone
+          if (!someoneHasAppTracking) {
+            // Infection
+            if (
+              this.people[i].state == HealthState.Infected &&
+              this.people[j].state == HealthState.Healthy
+            )
+              this.people[j].infect(this.people[i]);
 
-          if (
-            this.people[j].state == HealthState.Infected &&
-            this.people[i].state == HealthState.Healthy
-          )
-            this.people[i].infect();
+            if (
+              this.people[j].state == HealthState.Infected &&
+              this.people[i].state == HealthState.Healthy
+            )
+              this.people[i].infect(this.people[j]);
+          }
         }
       }
     }

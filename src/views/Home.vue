@@ -10,83 +10,44 @@
       :social-distancing-rate="socialDistancingRate"
     />
     <div id="controls">
-      <div class="control-row">
-        <label>Population</label>
-        <vue-slider
-          ref="population"
-          v-model="population"
-          :min="0"
-          :max="1000"
-          width="200px"
-        />
-        <div>{{ population }}s</div>
-      </div>
-      <div class="control-row">
-        <label>Duration of Illness</label>
-        <vue-slider
-          ref="durationOfIllness"
-          v-model="durationOfIllness"
-          :min="0"
-          :max="10"
-          width="200px"
-        />
-        <div>{{ durationOfIllness }}s</div>
-      </div>
-      <div class="control-row">
-        <label>Death Rate</label>
-        <vue-slider
-          ref="deathRate"
-          v-model="deathRate"
-          :min="0"
-          :max="100"
-          width="200px"
-        />
-        <div>{{ deathRate }}%</div>
-      </div>
-      <div class="control-row">
-        <label>Death Rate without Treatment</label>
-        <vue-slider
-          ref="deathRateWithoutTreatment"
-          v-model="deathRateWithoutTreatment"
-          :min="0"
-          :max="100"
-          width="200px"
-        />
-        <div>{{ deathRateWithoutTreatment }}%</div>
-      </div>
-      <div class="control-row">
-        <label>Hospital Capacity</label>
-        <vue-slider
-          ref="hospitalCapacity"
-          v-model="hospitalCapacity"
-          :min="0"
-          :max="1000"
-          width="200px"
-        />
-        <div>{{ hospitalCapacity }} ppl</div>
-      </div>
-      <div class="control-row">
-        <label>Social Distancing Rate</label>
-        <vue-slider
-          ref="socialDistancingRate"
-          v-model="socialDistancingRate"
-          :min="0"
-          :max="100"
-          width="200px"
-        />
-        <div>{{ socialDistancingRate }}%</div>
-      </div>
-      <div class="control-row">
-        <label>Border Closing Rate</label>
-        <vue-slider
-          ref="borderClosingRate"
-          v-model="borderClosingRate"
-          :min="0"
-          :max="100"
-          width="200px"
-        />
-        <div>{{ borderClosingRate }}%</div>
-      </div>
+      <control :max="1000" label="Population" id="population" />
+      <control
+        :max="10"
+        label="Duration of Illness"
+        id="durationOfIllness"
+        units="s"
+      />
+      <control :max="100" label="Death Rate" id="deathRate" units="%" />
+      <control
+        :max="100"
+        label="Death Rate without Treatment"
+        id="deathRateWithoutTreatment"
+        units="%"
+      />
+      <control
+        :max="1000"
+        label="Available hospital beds"
+        id="hospitalCapacity"
+        units=" beds"
+      />
+      <control
+        :max="100"
+        label="Border Closing Rate"
+        id="borderClosingRate"
+        units="%"
+      />
+      <control
+        :max="100"
+        label="Social Distancing Rate"
+        id="socialDistancingRate"
+        units="%"
+      />
+      <control
+        :max="100"
+        label="App tracker penetration"
+        id="appTrackingPenetration"
+        units="%"
+      />
       <div class="control-row">
         <button @click="start()">Start</button>
       </div>
@@ -100,74 +61,38 @@
 
 <script lang="ts">
 import EpidemyCanvas from "@/components/EpidemyCanvas.vue";
-import VueSlider from "vue-slider-component";
 import "vue-slider-component/theme/antd.css";
 import EventBus from "@/event-bus";
 import { Store } from "vuex";
 import Scenarios from "@/components/Scenarios.vue";
 import { ScenarioItemStep } from "@/config/scenarios";
+import { StoreState } from "@/store";
+import Control from "@/components/Control.vue";
 
 interface StoreAccessors {
   get(): number;
   set(value: number): void;
-  $store: Store<any>;
+  $store: Store<StoreState>;
 }
 
 export default {
   name: "Home",
   components: {
+    Control,
     Scenarios,
-    EpidemyCanvas,
-    VueSlider
-  },
-  data() {
-    return {
-      durationOfIllness: 10,
-      socialDistancingRate: 0
-    };
+    EpidemyCanvas
   },
   computed: {
-    hospitalCapacity: {
-      get(): number {
-        return this.$store.state.hospitalCapacity;
-      },
-      set(value: number) {
-        this.$store.commit("updateHospitalCapacity", value);
-      }
-    } as StoreAccessors,
-    deathRate: {
-      get(): number {
-        return this.$store.state.deathRate;
-      },
-      set(value: number) {
-        this.$store.commit("updateDeathRate", value);
-      }
-    } as StoreAccessors,
-    deathRateWithoutTreatment: {
-      get(): number {
-        return this.$store.state.deathRateWithoutTreatment;
-      },
-      set(value: number) {
-        this.$store.commit("updateDeathRateWithoutTreatment", value);
-      }
-    } as StoreAccessors,
-    population: {
-      get(): number {
-        return this.$store.state.population;
-      },
-      set(value: number) {
-        this.$store.commit("updatePopulation", value);
-      }
-    } as StoreAccessors,
-    borderClosingRate: {
-      get(): number {
-        return this.$store.state.borderClosingRate;
-      },
-      set(value: number) {
-        this.$store.commit("updateBorderClosingRate", value);
-      }
-    } as StoreAccessors
-  },
+    population(): number {
+      return this.$store.state.population;
+    },
+    durationOfIllness(): number {
+      return this.$store.state.durationOfIllness;
+    },
+    socialDistancingRate(): number {
+      return this.$store.state.socialDistancingRate;
+    }
+  } as any,
   methods: {
     start() {
       EventBus.$emit("start");
@@ -175,7 +100,7 @@ export default {
     scenarioItemStep(e: ScenarioItemStep) {
       this.$refs[e.param].setValue(e.value);
     }
-  }
+  } as any
 };
 </script>
 <style scoped lang="scss">
@@ -186,19 +111,5 @@ export default {
 }
 #controls {
   width: 500px;
-}
-.control-row {
-  display: flex;
-  flex-direction: row;
-  margin: 5px;
-  label,
-  div {
-    padding: 0 10px;
-  }
-
-  label {
-    text-align: right;
-    width: 200px;
-  }
 }
 </style>

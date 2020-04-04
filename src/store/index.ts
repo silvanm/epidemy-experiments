@@ -7,21 +7,28 @@ Vue.use(Vuex);
 
 export interface StoreState {
   population: number;
+  durationOfIllness: number;
   statEntries: StatEntry[];
   hospitalCapacity: number;
   deathRate: number;
   deathRateWithoutTreatment: number;
   borderClosingRate: number;
+  socialDistancingRate: number;
+  appTrackingPenetration: number;
+
 }
 
 export default new Vuex.Store({
   state: {
     population: 100,
+    durationOfIllness: 10,
     statEntries: [] as StatEntry[],
     hospitalCapacity: 25,
     deathRate: 5,
     deathRateWithoutTreatment: 20,
-    borderClosingRate: 10
+    borderClosingRate: 10,
+    socialDistancingRate: 0,
+    appTrackingPenetration: 0
   } as StoreState,
   getters: {
     lastState: state => {
@@ -49,6 +56,9 @@ export default new Vuex.Store({
     clearStats(state) {
       state.statEntries = [];
     },
+    updateDurationOfIllness(state, value: number) {
+      state.durationOfIllness = value;
+    },
     updateHospitalCapacity(state, value: number) {
       state.hospitalCapacity = value;
     },
@@ -64,9 +74,13 @@ export default new Vuex.Store({
     updateBorderClosingRate(state, value: number) {
       state.borderClosingRate = value;
     },
+    updateSocialDistancingRate(state, value: number) {
+      state.socialDistancingRate = value;
+    },
+    updateAppTrackingPenetration(state, value: number) {
+      state.appTrackingPenetration = value;
+    }
   },
-  actions: {
-
-  },
+  actions: {},
   modules: {}
 });

@@ -11,12 +11,12 @@ const healthStateConfig: HealthStateConfig = {
     label: "Healthy"
   },
   [HealthState.Infected]: {
-    color: "#D991BA",
+    color: "#EF476F",
     displayInGraph: true,
     label: "Infected"
   },
   [HealthState.Healed]: {
-    color: "#60992D",
+    color: "#06D6A0",
     displayInGraph: true,
     label: "Healed"
   },

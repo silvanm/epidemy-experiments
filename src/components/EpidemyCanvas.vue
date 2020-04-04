@@ -25,7 +25,11 @@ import { ChartData, ChartDataSets } from "chart.js";
 import { HealthState } from "@/Person";
 import EventBus from "@/event-bus";
 import Keyfigures from "@/components/Keyfigures.vue";
-import {borderPosXRelative, borderWidth, healthStateConfig} from "@/config/config";
+import {
+  borderPosXRelative,
+  borderWidth,
+  healthStateConfig
+} from "@/config/config";
 
 @Component({
   components: {
@@ -143,9 +147,11 @@ export default class EpidemyCanvas extends Vue {
 
   private drawBorder(): void {
     const ctx = this.context;
-    const borderHeight = Math.floor(this.height * this.$store.state.borderClosingRate / 100 * 0.5);
+    const borderHeight = Math.floor(
+      ((this.height * this.$store.state.borderClosingRate) / 100) * 0.5
+    );
     ctx.beginPath();
-    ctx.fillStyle = 'black';
+    ctx.fillStyle = "black";
     ctx.rect(
       Math.floor(this.width * borderPosXRelative),
       0,
@@ -166,6 +172,16 @@ export default class EpidemyCanvas extends Vue {
     this.country.updatePosition(this.socialDistancingRate);
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.country.people.forEach(person => {
+      if (person.infectedBy && person.hasAppTracking) {
+        ctx.beginPath();
+        ctx.lineTo(person.position.x, person.position.y);
+        ctx.lineTo(
+          person.infectedBy?.position.x,
+          person.infectedBy?.position.y
+        );
+        ctx.strokeStyle = "#eee";
+        ctx.stroke();
+      }
       ctx.beginPath();
       ctx.arc(
         Math.floor(person.position.x),
@@ -176,6 +192,19 @@ export default class EpidemyCanvas extends Vue {
       );
       ctx.fillStyle = healthStateConfig[person.state].color;
       ctx.fill();
+
+      if (person.hasAppTracking) {
+        ctx.beginPath();
+        ctx.arc(
+          Math.floor(person.position.x),
+          Math.floor(person.position.y),
+          person.radius * 2,
+          0,
+          2 * Math.PI
+        );
+        ctx.strokeStyle = healthStateConfig[person.state].color;
+        ctx.stroke();
+      }
     });
 
     this.drawBorder();

@@ -1,13 +1,13 @@
 <template>
   <div class="scenarios">
     <h2 v-if="currentScenario">Current Scenario: {{ currentScenario.name }}</h2>
-    <button
+    <div class="button"
       v-for="scenario in scenarios"
       :key="scenario.name"
       @click="run(scenario)"
     >
       {{ scenario.name }}
-    </button>
+    </div>
   </div>
 </template>
 <script lang="ts">
@@ -40,3 +40,18 @@ export default class Scenarios extends Vue {
   }
 }
 </script>
+<style lang="scss">
+  div.button {
+
+    &:hover {
+      background-color: #073B4C;
+    }
+
+    background-color: #118AB2;
+    font-weight: bold;
+    color:white;
+    padding: 5px;
+    margin: 5px;
+    cursor: pointer;
+  }
+</style>

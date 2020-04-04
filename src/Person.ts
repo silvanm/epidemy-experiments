@@ -9,92 +9,104 @@ export enum HealthState {
 }
 
 export class Person {
-  position: Position;
-  speed: Vector;
-  radius: number;
-  infectedAt: number | null;
-  state: HealthState;
-  durationOfIllness: number;
-  deathRate: number;
-  atHome: boolean;
-  store: Store<any>;
-  private socialDistancingRate = 0;
+         position: Position;
+         speed: Vector;
+         radius: number;
+         infectedAt: number | null;
+         state: HealthState;
+         durationOfIllness: number;
+         deathRate: number;
+         atHome: boolean;
+         hasAppTracking = false;
+         infectedBy!: Person | null;
+         store: Store<any>;
+         private socialDistancingRate = 0;
 
-  constructor(
-    position: Position,
-    speed: Vector,
-    radius: number,
-    durationOfIllness: number,
-    deathRate: number,
-    store: Store<any>
-  ) {
-    this.position = position;
-    this.speed = speed;
-    this.radius = radius;
-    this.state = HealthState.Healthy;
-    this.infectedAt = null;
-    this.durationOfIllness = durationOfIllness;
-    this.deathRate = deathRate;
-    this.atHome = false;
-    this.store = store;
-  }
+         constructor(
+           position: Position,
+           speed: Vector,
+           radius: number,
+           durationOfIllness: number,
+           deathRate: number,
+           store: Store<any>
+         ) {
+           this.position = position;
+           this.speed = speed;
+           this.radius = radius;
+           this.state = HealthState.Healthy;
+           this.infectedAt = null;
+           this.durationOfIllness = durationOfIllness;
+           this.deathRate = deathRate;
+           this.atHome = false;
+           this.store = store;
+         }
 
-  start() {
-    window.setTimeout(() => {
-      this.updateState();
-    }, Math.random() * 1000);
-  }
+         start() {
+           window.setTimeout(() => {
+             this.updateState();
+           }, Math.random() * 1000);
+         }
 
-  updateState(initial = false) {
-    if (!this.atHome) {
-      window.setTimeout(() => {
-        this.updateState();
-      }, 3000 * (this.socialDistancingRate / 100));
-    } else {
-      window.setTimeout(() => {
-        this.updateState();
-      }, 1000);
-    }
-    this.atHome = !this.atHome;
-  }
+         updateState(initial = false) {
+           if (!this.atHome) {
+             window.setTimeout(() => {
+               this.updateState();
+             }, 3000 * (this.socialDistancingRate / 100));
+           } else {
+             window.setTimeout(() => {
+               this.updateState();
+             }, 1000);
+           }
+           this.atHome = !this.atHome;
+         }
 
-  setSocialDistancingRate(r: number) {
-    this.socialDistancingRate = r;
-  }
+         setSocialDistancingRate(r: number) {
+           this.socialDistancingRate = r;
+         }
 
-  private getDeathRate(): number {
-    let deathRate = this.store.state.deathRate;
-    if (this.store.state.statEntries.length > 0) {
-      const lastStatEntry = this.store.state.statEntries[
-        this.store.state.statEntries.length - 1
-      ];
-      if (
-        lastStatEntry.populations[HealthState.Infected] >
-        this.store.state.hospitalCapacity
-      ) {
-        deathRate = this.store.state.deathRateWithoutTreatment;
-      }
-    }
-    return deathRate;
-  }
+         private getDeathRate(): number {
+           let deathRate = this.store.state.deathRate;
+           if (this.store.state.statEntries.length > 0) {
+             const lastStatEntry = this.store.state.statEntries[
+               this.store.state.statEntries.length - 1
+             ];
+             if (
+               lastStatEntry.populations[HealthState.Infected] >
+               this.store.state.hospitalCapacity
+             ) {
+               deathRate = this.store.state.deathRateWithoutTreatment;
+             }
+           }
+           return deathRate;
+         }
 
-  die() {
-    this.state = HealthState.Dead;
-    this.speed = { x: 0, y: 0 };
-  }
+         get logicalRadius(): number {
+           if (this.hasAppTracking) {
+             return this.radius * 2;
+           }
+           return this.radius;
+         }
 
-  infect() {
-    // infection does only work if someone is healthy
-    if (this.state === HealthState.Healthy) {
-      this.state = HealthState.Infected;
-      this.infectedAt = Date.now();
-      window.setTimeout(() => {
-        if (Math.random() < this.getDeathRate() / 100) {
-          this.die();
-        } else {
-          this.state = HealthState.Healed;
-        }
-      }, this.durationOfIllness * 1000);
-    }
-  }
-}
+         die() {
+           this.state = HealthState.Dead;
+           this.speed = { x: 0, y: 0 };
+         }
+
+         infect(infecter: Person | null = null) {
+           // infection does only work if someone is healthy
+           if (this.state === HealthState.Healthy) {
+             this.state = HealthState.Infected;
+             this.infectedAt = Date.now();
+             if (this.infectedBy !== null) {
+               this.infectedBy = infecter;
+             }
+             window.setTimeout(() => {
+               if (Math.random() < this.getDeathRate() / 100) {
+                 this.die();
+               } else {
+                 this.state = HealthState.Healed;
+               }
+             }, this.durationOfIllness * 1000);
+           }
+         }
+       }

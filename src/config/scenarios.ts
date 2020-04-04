@@ -63,5 +63,15 @@ export const scenarios: ScenarioItem[] = [
         value: 0
       }
     ]
+  },
+   {
+    name: "Enable AppTracking",
+    steps: [
+      {
+        after: 5,
+        param: "appTrackingPenetration",
+        value: 50
+      }
+    ]
   }
 ];

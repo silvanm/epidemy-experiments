@@ -1,8 +1,12 @@
 <template>
   <div class="control-row">
     <label>{{ label }}</label>
+    <v-popover content="foo">
+      <font-awesome-icon icon="info-circle"></font-awesome-icon>
+      <template slot="popover">{{ description }}</template>
+    </v-popover>
     <vue-slider
-      ref="population"
+      ref="slider"
       v-model="value"
       :min="0"
       :max="max"
@@ -17,6 +21,8 @@ import Component from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import VueSlider from "vue-slider-component";
 import Vue from "vue";
+import { StoreState } from "@/store";
+import { ScenarioItemStep } from "@/config/scenarios";
 
 @Component({
   components: {
@@ -34,10 +40,29 @@ export default class Control extends Vue {
   parameter!: number;
 
   @Prop()
+  description!: string;
+
+  @Prop()
   label!: string;
 
   @Prop({ default: "" })
   units!: string;
+
+  constructor() {
+    super();
+    this.$store.watch(
+      (state: StoreState) => {
+        return state.requestScenarioItemStep;
+      },
+      (s: ScenarioItemStep | null) => {
+        if (s !== null && s?.param == this.id) {
+          const slider = this.$refs["slider"] as VueSlider;
+          slider.setValue(s.value);
+          this.$store.commit("requestScenarioItemStep", null);
+        }
+      }
+    );
+  }
 
   get value(): number {
     return this.$store.state[this.id];
@@ -68,10 +93,19 @@ export default class Control extends Vue {
   }
 
   .vue-slider-process {
-    background-color: #118AB2;
+    background-color: #118ab2;
   }
   .vue-slider-dot-handle {
-    border-color: #118AB2;
+    border-color: #118ab2;
+  }
+
+  .vue-slider:hover {
+    .vue-slider-process {
+      background-color: #073b4c;
+    }
+    .vue-slider-dot-handle:hover {
+      border-color: #073b4c;
+    }
   }
 }
 </style>

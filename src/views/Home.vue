@@ -15,47 +15,51 @@
         :max="10"
         label="Duration of Illness"
         id="durationOfIllness"
+        description="After how many seconds the person recovers"
         units="s"
       />
-      <control :max="100" label="Death Rate" id="deathRate" units="%" />
+      <control :max="100" label="Death Rate" id="deathRate" units="%"
+      description="This is the likelihood that the person dies at the end of the illness duration." />
       <control
         :max="100"
-        label="Death Rate without Treatment"
+        label="Death Rate without Hospital bed"
         id="deathRateWithoutTreatment"
         units="%"
+        description="The likelihood that the person dies at the end of the illness duration if the person does not get a hospital bed."
       />
       <control
         :max="1000"
         label="Available hospital beds"
         id="hospitalCapacity"
         units=" beds"
+        description="Number of hospital beds available"
       />
       <control
         :max="100"
         label="Border Closing Rate"
         id="borderClosingRate"
         units="%"
+        description="Whether borders are closed or not"
       />
       <control
         :max="100"
         label="Social Distancing Rate"
         id="socialDistancingRate"
         units="%"
+        description="The higher this rate, the more the person's movement is freezed to symbolize 'staying at home'"
       />
       <control
         :max="100"
         label="App tracker penetration"
         id="appTrackingPenetration"
         units="%"
+        description="The higher, the more the people have enabled position tracking which allows to prevent infections"
       />
       <div class="control-row">
         <button @click="start()">Start</button>
       </div>
     </div>
-    <scenarios
-      @start="start()"
-      @scenario-item-step="scenarioItemStep"
-    ></scenarios>
+    <scenarios @start="start()"></scenarios>
   </div>
 </template>
 
@@ -65,7 +69,6 @@ import "vue-slider-component/theme/antd.css";
 import EventBus from "@/event-bus";
 import { Store } from "vuex";
 import Scenarios from "@/components/Scenarios.vue";
-import { ScenarioItemStep } from "@/config/scenarios";
 import { StoreState } from "@/store";
 import Control from "@/components/Control.vue";
 
@@ -96,14 +99,11 @@ export default {
   methods: {
     start() {
       EventBus.$emit("start");
-    },
-    scenarioItemStep(e: ScenarioItemStep) {
-      this.$refs[e.param].setValue(e.value);
     }
   } as any
 };
 </script>
-<style scoped lang="scss">
+<style lang="scss">
 .home {
   display: flex;
   flex-direction: row;
@@ -111,5 +111,111 @@ export default {
 }
 #controls {
   width: 500px;
+}
+
+.tooltip {
+  display: block !important;
+  z-index: 10000;
+}
+
+.tooltip .tooltip-inner {
+  background: black;
+  color: white;
+  border-radius: 16px;
+  padding: 5px 10px 4px;
+}
+
+.tooltip .tooltip-arrow {
+  width: 0;
+  height: 0;
+  border-style: solid;
+  position: absolute;
+  margin: 5px;
+  border-color: black;
+  z-index: 1;
+}
+
+.tooltip[x-placement^="top"] {
+  margin-bottom: 5px;
+}
+
+.tooltip[x-placement^="top"] .tooltip-arrow {
+  border-width: 5px 5px 0 5px;
+  border-left-color: transparent !important;
+  border-right-color: transparent !important;
+  border-bottom-color: transparent !important;
+  bottom: -5px;
+  left: calc(50% - 5px);
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.tooltip[x-placement^="bottom"] {
+  margin-top: 5px;
+}
+
+.tooltip[x-placement^="bottom"] .tooltip-arrow {
+  border-width: 0 5px 5px 5px;
+  border-left-color: transparent !important;
+  border-right-color: transparent !important;
+  border-top-color: transparent !important;
+  top: -5px;
+  left: calc(50% - 5px);
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.tooltip[x-placement^="right"] {
+  margin-left: 5px;
+}
+
+.tooltip[x-placement^="right"] .tooltip-arrow {
+  border-width: 5px 5px 5px 0;
+  border-left-color: transparent !important;
+  border-top-color: transparent !important;
+  border-bottom-color: transparent !important;
+  left: -5px;
+  top: calc(50% - 5px);
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.tooltip[x-placement^="left"] {
+  margin-right: 5px;
+}
+
+.tooltip[x-placement^="left"] .tooltip-arrow {
+  border-width: 5px 0 5px 5px;
+  border-top-color: transparent !important;
+  border-right-color: transparent !important;
+  border-bottom-color: transparent !important;
+  right: -5px;
+  top: calc(50% - 5px);
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.tooltip.popover .popover-inner {
+  background: #f9f9f9;
+  color: black;
+  padding: 24px;
+  border-radius: 5px;
+  box-shadow: 0 5px 30px rgba(black, 0.1);
+}
+
+.tooltip.popover .popover-arrow {
+  border-color: #f9f9f9;
+}
+
+.tooltip[aria-hidden="true"] {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.15s, visibility 0.15s;
+}
+
+.tooltip[aria-hidden="false"] {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity 0.15s;
 }
 </style>

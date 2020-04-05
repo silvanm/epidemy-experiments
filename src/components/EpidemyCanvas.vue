@@ -1,3 +1,4 @@
+import { HealthState } from '@/Person';
 <!--suppress JSUnfilteredForInLoop -->
 <template>
   <div>
@@ -22,12 +23,12 @@ import { Prop } from "vue-property-decorator";
 import { StatEntry } from "@/Stats";
 import LineChart from "./LineChart.vue";
 import { ChartData, ChartDataSets } from "chart.js";
-import { HealthState } from "@/Person";
+import {HealthState, Person} from "@/Person";
 import EventBus from "@/event-bus";
 import Keyfigures from "@/components/Keyfigures.vue";
 import {
   borderPosXRelative,
-  borderWidth,
+  borderWidth, drawCirclesForAppTracking,
   healthStateConfig
 } from "@/config/config";
 
@@ -67,6 +68,8 @@ export default class EpidemyCanvas extends Vue {
   labels: number[] = [];
 
   isRunning = false;
+
+  noChangeSince: number | null = null;
 
   constructor() {
     super();
@@ -135,6 +138,7 @@ export default class EpidemyCanvas extends Vue {
   start() {
     this.init();
     this.isRunning = true;
+    this.noChangeSince = null;
     this.draw();
     this.updateStats();
     if (this.statTimer) {
@@ -143,6 +147,15 @@ export default class EpidemyCanvas extends Vue {
     this.statTimer = window.setInterval(() => {
       this.updateStats();
     }, 500);
+    this.$store.commit("start");
+  }
+
+  stop() {
+    this.isRunning = false;
+    if (this.statTimer) window.clearTimeout(this.statTimer);
+    this.noChangeSince = null;
+    this.$emit("stopped");
+    this.$store.commit("stop");
   }
 
   private drawBorder(): void {
@@ -172,16 +185,19 @@ export default class EpidemyCanvas extends Vue {
     this.country.updatePosition(this.socialDistancingRate);
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.country.people.forEach(person => {
-      if (person.infectedBy && person.hasAppTracking) {
-        ctx.beginPath();
-        ctx.lineTo(person.position.x, person.position.y);
-        ctx.lineTo(
-          person.infectedBy?.position.x,
-          person.infectedBy?.position.y
-        );
-        ctx.strokeStyle = "#eee";
-        ctx.stroke();
-      }
+      person.contactee.forEach((contact: Person) => {
+        if (person.contactee && person.hasAppTracking) {
+          ctx.beginPath();
+          ctx.lineTo(person.position.x, person.position.y);
+          ctx.lineTo(
+            contact.position.x,
+            contact.position.y
+          );
+          ctx.strokeStyle = "#eee";
+          ctx.stroke();
+        }
+      });
+
       ctx.beginPath();
       ctx.arc(
         Math.floor(person.position.x),
@@ -193,7 +209,7 @@ export default class EpidemyCanvas extends Vue {
       ctx.fillStyle = healthStateConfig[person.state].color;
       ctx.fill();
 
-      if (person.hasAppTracking) {
+      if (person.hasAppTracking && drawCirclesForAppTracking) {
         ctx.beginPath();
         ctx.arc(
           Math.floor(person.position.x),
@@ -209,10 +225,44 @@ export default class EpidemyCanvas extends Vue {
 
     this.drawBorder();
 
+    if (this.shouldWeStop()) {
+      this.stop();
+    }
+
     if (this.isRunning) {
       window.requestAnimationFrame(() => {
         this.draw();
       });
+    }
+  }
+
+  private shouldWeStop() {
+    if (!this.$store.state.statEntries) return false;
+
+    if (this.$store.state.statEntries.length < 10) return false;
+
+    const lastEntry: StatEntry = this.$store.state.statEntries[
+      this.$store.state.statEntries.length - 2
+    ];
+    const currentEntry: StatEntry = this.$store.state.statEntries[
+      this.$store.state.statEntries.length - 1
+    ];
+
+    if (
+      lastEntry.populations[HealthState.Healed] +
+        lastEntry.populations[HealthState.Infected] ==
+      currentEntry.populations[HealthState.Healed] +
+        currentEntry.populations[HealthState.Infected]
+    ) {
+      if (this.noChangeSince === null) this.noChangeSince = Date.now();
+    } else {
+      this.noChangeSince = null;
+    }
+
+    if (this.noChangeSince === null) {
+      return false;
+    } else {
+      return Date.now() - this.noChangeSince > 10000;
     }
   }
 
@@ -226,7 +276,7 @@ export default class EpidemyCanvas extends Vue {
             mode: "horizontal",
             scaleID: "y-axis-0",
             value: this.$store.state.hospitalCapacity,
-            borderColor: "red",
+            borderColor: "#992E47",
             borderWidth: 2
           }
         ]

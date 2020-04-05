@@ -6,16 +6,22 @@ export interface ScenarioItemStep {
 
 export interface ScenarioItem {
   name: string;
+  completed: boolean;
+  deaths: number;
   steps: ScenarioItemStep[];
 }
 
 export const scenarios: ScenarioItem[] = [
-    {
-    name: "Run",
-    steps: []
+  {
+    name: "Custom Scenario",
+    steps: [],
+    deaths: 0,
+    completed: false
   },
   {
     name: "Social Distancing",
+    deaths: 0,
+    completed: false,
     steps: [
       {
         after: 0,
@@ -23,7 +29,7 @@ export const scenarios: ScenarioItem[] = [
         value: 5
       },
       {
-        after: 10,
+        after: 5,
         param: "socialDistancingRate",
         value: 100
       }
@@ -31,6 +37,8 @@ export const scenarios: ScenarioItem[] = [
   },
   {
     name: "Interrupted Social Distancing",
+    deaths: 0,
+    completed: false,
     steps: [
       {
         after: 0,
@@ -38,7 +46,7 @@ export const scenarios: ScenarioItem[] = [
         value: 5
       },
       {
-        after: 10,
+        after: 5,
         param: "socialDistancingRate",
         value: 100
       },
@@ -51,7 +59,14 @@ export const scenarios: ScenarioItem[] = [
   },
   {
     name: "Closing Borders",
+    deaths: 0,
+    completed: false,
     steps: [
+      {
+        after: 0,
+        param: "borderClosingRate",
+        value: 5
+      },
       {
         after: 5,
         param: "borderClosingRate",
@@ -64,8 +79,10 @@ export const scenarios: ScenarioItem[] = [
       }
     ]
   },
-   {
-    name: "Enable AppTracking",
+  {
+    name: "Enable Contact Tracking",
+    deaths: 0,
+    completed: false,
     steps: [
       {
         after: 5,

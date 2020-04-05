@@ -73,7 +73,7 @@ export class Country {
 
   private updateAppTrackingState(v: number) {
     for (let i = 0; i < this.people.length; i++) {
-      this.people[i].hasAppTracking = i < v;
+      this.people[i].enableAppTracking(i < v);
     }
   }
 
@@ -114,8 +114,19 @@ export class Country {
         ) {
           resolveCollision(this.people[i], this.people[j]);
 
-          // Someone with app tracking will not infect anyone
-          if (!someoneHasAppTracking) {
+          // Limit connections not to overload the diagram
+          if (
+            this.people[i].contactee.length < 5 &&
+            this.people[j].contactee.length < 5 &&
+              someoneHasAppTracking
+          ) {
+            this.people[i].contactee.push(this.people[j]);
+            this.people[j].contacter.push(this.people[i]);
+          }
+
+          // Someone with app tracking will reduce the probability to pass on the virus
+          // by half
+          if (!someoneHasAppTracking || Math.random() > 0.9) {
             // Infection
             if (
               this.people[i].state == HealthState.Infected &&

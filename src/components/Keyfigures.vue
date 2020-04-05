@@ -55,7 +55,7 @@
       <tr>
         <th>Available Hospital Beds</th>
         <td>
-          <span v-if="hospitalBeds === 0" class="blink_me">⚠️</span
+          <span v-if="hospitalBeds === 0" class="blink_me"><font-awesome-icon icon="exclamation-triangle"/>️</span
           >{{ hospitalBeds }}
         </td>
         <td>

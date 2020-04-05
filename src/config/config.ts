@@ -25,10 +25,12 @@ const healthStateConfig: HealthStateConfig = {
 
 const borderWidth = 10;
 const borderPosXRelative = 0.3;
+const drawCirclesForAppTracking = false;
 
 export {
   healthStateConfig,
   HealthStateConfig,
   borderWidth,
-  borderPosXRelative
+  borderPosXRelative,
+  drawCirclesForAppTracking
 };

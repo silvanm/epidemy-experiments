@@ -1,7 +1,7 @@
 <template>
   <div class="control-row">
     <label>{{ label }}</label>
-    <v-popover content="foo">
+    <v-popover >
       <font-awesome-icon icon="info-circle"></font-awesome-icon>
       <template slot="popover">{{ description }}</template>
     </v-popover>
@@ -10,7 +10,7 @@
       v-model="value"
       :min="0"
       :max="max"
-      width="200px"
+      width="400px"
       class="vue-slider"
     />
     <div class="units">{{ value }}{{ units }}</div>
@@ -80,16 +80,20 @@ export default class Control extends Vue {
 .control-row {
   display: flex;
   flex-direction: row;
-  margin: 5px;
+  margin: 5px 0 0 0;
 
-  label,
   div.units {
     padding: 0 10px;
   }
 
   label {
-    text-align: right;
-    width: 200px;
+    text-align: left;
+    width: 250px;
+  }
+
+  .v-popover {
+    padding: 0 10px 0 10px;
+    cursor: pointer;
   }
 
   .vue-slider-process {

@@ -3,7 +3,7 @@
     <table v-if="hasStats">
       <tr>
         <th>Healthy</th>
-        <td>
+        <td class="number">
           {{ lastEntry.populations[0] }}
         </td>
         <td>
@@ -14,10 +14,9 @@
           ></sparkbar>
         </td>
       </tr>
-
       <tr>
         <th>Infected</th>
-        <td>
+        <td class="number">
           {{ lastEntry.populations[1] }}
         </td>
         <td>
@@ -30,7 +29,7 @@
       </tr>
       <tr>
         <th>Recovered</th>
-        <td>
+        <td class="number">
           {{ lastEntry.populations[2] }}
         </td>
         <td>
@@ -43,7 +42,7 @@
       </tr>
       <tr>
         <th>Dead</th>
-        <td>{{ lastEntry.populations[3] }}</td>
+        <td class="number">{{ lastEntry.populations[3] }}</td>
         <td>
           <sparkbar
             :value="lastEntry.populations[3]"
@@ -53,13 +52,20 @@
         </td>
       </tr>
       <tr>
-        <th>Available Hospital Beds</th>
-        <td>
-          <span v-if="hospitalBeds === 0" class="blink_me"><font-awesome-icon icon="exclamation-triangle"/>️</span
-          >{{ hospitalBeds }}
+        <th>Free Hospital Beds
+        <span v-if="hospitalBeds === 0" class="blink_me"
+            ><font-awesome-icon icon="exclamation-triangle" />️</span
+          >
+        </th>
+        <td class="number">
+          {{ hospitalBeds }}
         </td>
         <td>
-          <sparkbar :value="hospitalBeds" :max="hospitalCapacity" color="#eee"></sparkbar>
+          <sparkbar
+            :value="hospitalBeds"
+            :max="hospitalCapacity"
+            color="#eee"
+          ></sparkbar>
         </td>
       </tr>
     </table>
@@ -106,9 +112,13 @@ export default class Keyfigures extends Vue {
 <style scoped lang="scss">
 th {
   text-align: left;
+  font-weight: normal;
 }
 td {
   text-align: right;
+}
+td.number {
+  display: none;
 }
 .blink_me {
   animation: blinker 1s linear infinite;

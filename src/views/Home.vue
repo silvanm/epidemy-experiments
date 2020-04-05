@@ -10,56 +10,65 @@
       :social-distancing-rate="socialDistancingRate"
     />
     <div id="controls">
-      <control :max="1000" label="Population" id="population" />
-      <control
-        :max="10"
-        label="Duration of Illness"
-        id="durationOfIllness"
-        description="After how many seconds the person recovers"
-        units="s"
-      />
-      <control :max="100" label="Death Rate" id="deathRate" units="%"
-      description="This is the likelihood that the person dies at the end of the illness duration." />
-      <control
-        :max="100"
-        label="Death Rate without Hospital bed"
-        id="deathRateWithoutTreatment"
-        units="%"
-        description="The likelihood that the person dies at the end of the illness duration if the person does not get a hospital bed."
-      />
-      <control
-        :max="1000"
-        label="Available hospital beds"
-        id="hospitalCapacity"
-        units=" beds"
-        description="Number of hospital beds available"
-      />
-      <control
-        :max="100"
-        label="Border Closing Rate"
-        id="borderClosingRate"
-        units="%"
-        description="Whether borders are closed or not"
-      />
-      <control
-        :max="100"
-        label="Social Distancing Rate"
-        id="socialDistancingRate"
-        units="%"
-        description="The higher this rate, the more the person's movement is freezed to symbolize 'staying at home'"
-      />
-      <control
-        :max="100"
-        label="App tracker penetration"
-        id="appTrackingPenetration"
-        units="%"
-        description="The higher, the more the people have enabled position tracking which allows to prevent infections"
-      />
-      <div class="control-row">
-        <button @click="start()">Start</button>
+      <div class="slider-box">
+        <h2>Control the simulation parameters</h2>
+        <control :max="1000" label="Population" id="population"
+        description="Number of dots"/>
+        <control
+          :max="50"
+          label="Duration of Illness"
+          id="durationOfIllness"
+          description="After how many seconds the person recovers or dies"
+          units="s"
+        />
+        <control
+          :max="100"
+          label="Death Rate"
+          id="deathRate"
+          units="%"
+          description="This is the likelihood that the person dies at the end of the illness duration."
+        />
+        <control
+          :max="100"
+          label="Death Rate without Hospital bed"
+          id="deathRateWithoutTreatment"
+          units="%"
+          description="The likelihood that the person dies at the end of the illness duration if the person does not get a hospital bed."
+        />
+        <control
+          :max="1000"
+          label="Available hospital beds"
+          id="hospitalCapacity"
+          units=" beds"
+          description="Number of hospital beds available"
+        />
+        <control
+          :max="100"
+          label="Border Closing Rate"
+          id="borderClosingRate"
+          units="%"
+          description="Whether borders are closed or not"
+        />
+        <control
+          :max="100"
+          label="Social Distancing Rate"
+          id="socialDistancingRate"
+          units="%"
+          description="The higher this rate, the more the person's movement is freezed to symbolize 'staying at home'"
+        />
+        <control
+          :max="100"
+          label="Contact tracker penetration"
+          id="appTrackingPenetration"
+          units="%"
+          description="The higher, the more the people have enabled contact tracking which allows them to be notified if they had contact to infected people."
+        />
+      </div>
+      <div class="scenario-box">
+        <h2>Run a scenario</h2>
+        <scenarios @start="start()"></scenarios>
       </div>
     </div>
-    <scenarios @start="start()"></scenarios>
   </div>
 </template>
 
@@ -110,7 +119,17 @@ export default {
   flex-wrap: wrap;
 }
 #controls {
-  width: 500px;
+  display: flex;
+  flex-direction: row;
+
+  .slider-box {
+    width: 800px;
+  }
+
+  .scenario-box {
+    width: 390px;
+    padding: 0 0 0 10px;
+  }
 }
 
 .tooltip {

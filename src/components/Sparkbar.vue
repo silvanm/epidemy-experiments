@@ -16,7 +16,7 @@ export default class Sparkbar extends Vue {
   min = 0;
   @Prop({ default: 100 })
   max!: number;
-  @Prop({ default: 200 })
+  @Prop({ default: 150 })
   width!: number;
   @Prop({ default: 0 })
   value!: number;
@@ -43,5 +43,6 @@ export default class Sparkbar extends Vue {
 <style scoped lang="scss">
 .sparkbar-inner {
   height: 100%;
+  min-width: 1px;
 }
 </style>

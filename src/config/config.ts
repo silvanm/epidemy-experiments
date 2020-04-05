@@ -18,7 +18,7 @@ const healthStateConfig: HealthStateConfig = {
   [HealthState.Healed]: {
     color: "#06D6A0",
     displayInGraph: true,
-    label: "Healed"
+    label: "Recovered"
   },
   [HealthState.Dead]: { color: "black", displayInGraph: true, label: "Dead" }
 };

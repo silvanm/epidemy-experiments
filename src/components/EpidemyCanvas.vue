@@ -5,12 +5,18 @@ import { HealthState } from '@/Person';
     <div id="container">
       <canvas ref="canvas" :width="width" :height="height"></canvas>
       <div class="small">
-        <line-chart
-          :chart-data="datacollection"
-          :options="chartOptions()"
-        ></line-chart>
+        <div class="linechart-container">
+          <line-chart
+            :chart-data="datacollection"
+            :options="chartOptions()"
+            :width="390"
+            :height="270"
+          ></line-chart>
+        </div>
+        <div class="keyfigures-container">
+          <keyfigures></keyfigures>
+        </div>
       </div>
-      <keyfigures></keyfigures>
     </div>
   </div>
 </template>
@@ -23,12 +29,13 @@ import { Prop } from "vue-property-decorator";
 import { StatEntry } from "@/Stats";
 import LineChart from "./LineChart.vue";
 import { ChartData, ChartDataSets } from "chart.js";
-import {HealthState, Person} from "@/Person";
+import { HealthState, Person } from "@/Person";
 import EventBus from "@/event-bus";
 import Keyfigures from "@/components/Keyfigures.vue";
 import {
   borderPosXRelative,
-  borderWidth, drawCirclesForAppTracking,
+  borderWidth,
+  drawCirclesForAppTracking,
   healthStateConfig
 } from "@/config/config";
 
@@ -164,7 +171,7 @@ export default class EpidemyCanvas extends Vue {
       ((this.height * this.$store.state.borderClosingRate) / 100) * 0.5
     );
     ctx.beginPath();
-    ctx.fillStyle = "black";
+    ctx.fillStyle = '#118ab2';
     ctx.rect(
       Math.floor(this.width * borderPosXRelative),
       0,
@@ -189,10 +196,7 @@ export default class EpidemyCanvas extends Vue {
         if (person.contactee && person.hasAppTracking) {
           ctx.beginPath();
           ctx.lineTo(person.position.x, person.position.y);
-          ctx.lineTo(
-            contact.position.x,
-            contact.position.y
-          );
+          ctx.lineTo(contact.position.x, contact.position.y);
           ctx.strokeStyle = "#eee";
           ctx.stroke();
         }
@@ -262,12 +266,16 @@ export default class EpidemyCanvas extends Vue {
     if (this.noChangeSince === null) {
       return false;
     } else {
-      return Date.now() - this.noChangeSince > 10000;
+      return (
+        Date.now() - this.noChangeSince > 10000 &&
+        this.$store.state.statEntries.length >= 100
+      );
     }
   }
 
   chartOptions() {
     return {
+      responsive: false,
       annotation: {
         drawTime: "afterDatasetsDraw",
         annotations: [
@@ -277,7 +285,13 @@ export default class EpidemyCanvas extends Vue {
             scaleID: "y-axis-0",
             value: this.$store.state.hospitalCapacity,
             borderColor: "#992E47",
-            borderWidth: 2
+            borderWidth: 2,
+            label: {
+              content: "Max available Hospital beds",
+              enabled: true,
+              backgroundColor: "#992E47",
+              fontColor: "white",
+            }
           }
         ]
       },
@@ -302,7 +316,11 @@ export default class EpidemyCanvas extends Vue {
             stacked: true,
             ticks: {
               suggestedMax: this.$store.state.population,
-              min: 0
+              min: 0,
+              display: false
+            },
+            gridLines: {
+              display: false
             }
           }
         ]
@@ -321,7 +339,11 @@ export default class EpidemyCanvas extends Vue {
 canvas {
   border: 1px solid gray;
 }
-.small {
-  max-width: 400px;
+.linechart-container {
+}
+
+.keyfigures-container {
+  border-bottom: 1px solid gray;
+  padding: 10px;
 }
 </style>

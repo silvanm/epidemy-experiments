@@ -1,6 +1,5 @@
 <template>
   <div class="scenarios">
-    <h2>Pick a Scenario</h2>
     <div
       class="row"
       v-for="scenario in scenarios"
@@ -11,7 +10,10 @@
         <font-awesome-icon icon="play" />
         {{ scenario.name }}
       </div>
-      <span v-if="scenario.completed"> {{ scenario.deaths }} Deaths </span>
+      <div class="scenario-deaths">
+        {{ scenario.completed ? scenario.deaths : "__" }}
+      </div>
+      <div class="scenario-death-label">Deaths</div>
     </div>
   </div>
 </template>
@@ -37,7 +39,10 @@ export default class Scenarios extends Vue {
 
   scenarioIsActive(scenario: ScenarioItem) {
     if (!scenario) return false;
-    return scenario.name == this.currentScenario?.name && !this.currentScenario.completed;
+    return (
+      scenario.name == this.currentScenario?.name &&
+      !this.currentScenario.completed
+    );
   }
 
   run(scenario: ScenarioItem) {
@@ -61,10 +66,25 @@ export default class Scenarios extends Vue {
     });
     this.$emit("start");
   }
+
+  mounted() {
+    this.run(scenarios[0]);
+  }
 }
 </script>
 <style lang="scss">
 div.row {
+  display: flex;
+  align-items: center;
+
+  div {
+    margin-left: 5px;
+  }
+
+  .scenario-deaths {
+    text-align: right;
+  }
+
   div.button {
     &:hover,
     &.active {
@@ -75,10 +95,10 @@ div.row {
     font-weight: bold;
     color: white;
     padding: 5px;
-    margin: 5px;
+    margin: 1px;
     cursor: pointer;
     display: inline-block;
-    width: 250px;
+    width: 300px;
 
     &.active .fa-play {
       animation: blinker 1s linear infinite;

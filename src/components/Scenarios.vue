@@ -1,5 +1,11 @@
 <template>
   <div class="scenarios">
+    <div class="row" @click="run(scenarios[0])">
+      <div class="button">
+        <font-awesome-icon icon="play" />
+        Restart
+      </div>
+    </div>
     <div
       class="row"
       v-for="scenario in scenarios"
@@ -10,10 +16,10 @@
         <font-awesome-icon icon="play" />
         {{ scenario.name }}
       </div>
-      <div class="scenario-deaths">
+      <div class="scenario-deaths" v-if="oneScenarioHasRun">
         {{ scenario.completed ? scenario.deaths : "__" }}
       </div>
-      <div class="scenario-death-label">Deaths</div>
+      <div class="scenario-death-label" v-if="oneScenarioHasRun">Deaths</div>
     </div>
   </div>
 </template>
@@ -29,6 +35,7 @@ import { HealthState } from "@/Person";
 export default class Scenarios extends Vue {
   scenarios = scenarios;
   currentScenario: ScenarioItem | null = null;
+  oneScenarioHasRun = false;
   timers: number[] = [];
 
   clearTimers() {
@@ -55,6 +62,7 @@ export default class Scenarios extends Vue {
         if (this.currentScenario !== null) {
           this.currentScenario.completed = true;
           this.currentScenario.deaths = deaths;
+          this.oneScenarioHasRun = true;
         }
       }
     });

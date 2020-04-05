@@ -7,6 +7,7 @@ import { HealthState } from '@/Person';
       <div class="small">
         <div class="linechart-container">
           <line-chart
+                  :key="linechartKey"
             :chart-data="datacollection"
             :options="chartOptions()"
             :width="390"
@@ -38,6 +39,9 @@ import {
   drawCirclesForAppTracking,
   healthStateConfig
 } from "@/config/config";
+import { StoreState } from "@/store";
+import { ScenarioItemStep } from "@/config/scenarios";
+import VueSlider from "vue-slider-component";
 
 @Component({
   components: {
@@ -78,6 +82,9 @@ export default class EpidemyCanvas extends Vue {
 
   noChangeSince: number | null = null;
 
+  // see https://michaelnthiessen.com/force-re-render/
+  linechartKey=0;
+
   constructor() {
     super();
     this.datacollection = {};
@@ -92,6 +99,27 @@ export default class EpidemyCanvas extends Vue {
     EventBus.$on("start", () => {
       this.start();
     });
+
+    this.$store.watch(
+      (state: StoreState) => {
+        return state.population;
+      },
+      (s: number) => {
+        // add people
+        if (s > this.country.people.length) {
+          this.country.createPeople(
+            s - this.country.people.length,
+            this.radius,
+            this.durationOfIllness,
+            this.$store.state.deathRate,
+            this.socialDistancingRate,
+            this.$store
+          );
+        } else {
+          this.country.people.splice(0, this.country.people.length - s);
+        }
+      }
+    );
   }
 
   updateStats() {
@@ -144,6 +172,7 @@ export default class EpidemyCanvas extends Vue {
 
   start() {
     this.init();
+    this.linechartKey++;
     this.isRunning = true;
     this.noChangeSince = null;
     this.draw();
@@ -171,7 +200,7 @@ export default class EpidemyCanvas extends Vue {
       ((this.height * this.$store.state.borderClosingRate) / 100) * 0.5
     );
     ctx.beginPath();
-    ctx.fillStyle = '#118ab2';
+    ctx.fillStyle = "#118ab2";
     ctx.rect(
       Math.floor(this.width * borderPosXRelative),
       0,
@@ -287,10 +316,10 @@ export default class EpidemyCanvas extends Vue {
             borderColor: "#992E47",
             borderWidth: 2,
             label: {
-              content: "Max available Hospital beds",
+              content: "Max available hospital beds",
               enabled: true,
               backgroundColor: "#992E47",
-              fontColor: "white",
+              fontColor: "white"
             }
           }
         ]
@@ -337,13 +366,14 @@ export default class EpidemyCanvas extends Vue {
   flex-wrap: wrap;
 }
 canvas {
-  border: 1px solid gray;
+  border: 1px solid #ccc;
 }
 .linechart-container {
+  padding-left: 5px;
 }
 
 .keyfigures-container {
-  border-bottom: 1px solid gray;
+  border-bottom: 1px solid #ccc;
   padding: 10px;
 }
 </style>

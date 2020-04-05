@@ -85,6 +85,16 @@ export const scenarios: ScenarioItem[] = [
     completed: false,
     steps: [
       {
+        after: 0,
+        param: "borderClosingRate",
+        value: 5
+      },
+      {
+        after: 0,
+        param: "socialDistancingRate",
+        value: 0
+      },
+      {
         after: 5,
         param: "appTrackingPenetration",
         value: 50

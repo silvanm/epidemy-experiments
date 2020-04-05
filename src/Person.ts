@@ -48,7 +48,7 @@ export class Person {
   start() {
     window.setTimeout(() => {
       this.updateState();
-    }, Math.random() * 1000);
+    }, Math.random() * 3000);
   }
 
   updateState(initial = false) {

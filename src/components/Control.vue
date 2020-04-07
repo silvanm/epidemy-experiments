@@ -1,7 +1,7 @@
 <template>
   <div class="control-row">
     <label>{{ label }}</label>
-    <v-popover >
+    <v-popover>
       <font-awesome-icon icon="info-circle"></font-awesome-icon>
       <template slot="popover">{{ description }}</template>
     </v-popover>
@@ -10,7 +10,7 @@
       v-model="value"
       :min="0"
       :max="max"
-      width="400px"
+      :width="width()"
       class="vue-slider"
     />
     <div class="units">{{ value }}{{ units }}</div>
@@ -64,6 +64,10 @@ export default class Control extends Vue {
     );
   }
 
+  width(): string {
+    return Math.min(400, window.innerWidth * 0.4).toString() + 'px';
+  }
+
   get value(): number {
     return this.$store.state[this.id];
   }
@@ -89,6 +93,12 @@ export default class Control extends Vue {
   label {
     text-align: left;
     width: 250px;
+  }
+
+  @media only screen and (max-width: 500px) {
+    label {
+      width: 100px;
+    }
   }
 
   .v-popover {

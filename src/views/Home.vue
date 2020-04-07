@@ -2,8 +2,8 @@
   <div class="home">
     <epidemy-canvas
       ref="canvas"
-      width="800"
-      height="400"
+      :width="width"
+      :height="height"
       :population="population"
       :radius="5"
       :duration-of-illness="durationOfIllness"
@@ -12,13 +12,17 @@
     <div id="controls">
       <div class="slider-box">
         <h2>Control the simulation parameters</h2>
-        <control :max="1000" label="Population" id="population"
-        description="Number of dots"/>
+        <control
+          :max="1000"
+          label="Population"
+          id="population"
+          description="Number of dots in the animation"
+        />
         <control
           :max="50"
           label="Duration of Illness"
           id="durationOfIllness"
-          description="After how many seconds the person recovers or dies"
+          description="After how many seconds of illness the person recovers or dies"
           units="s"
         />
         <control
@@ -26,14 +30,14 @@
           label="Death Rate"
           id="deathRate"
           units="%"
-          description="This is the likelihood that the person dies at the end of the illness duration."
+          description="This is the likelihood that the person dies at the end of the illness duration"
         />
         <control
           :max="100"
           label="Death Rate without Hospital bed"
           id="deathRateWithoutTreatment"
           units="%"
-          description="The likelihood that the person dies at the end of the illness duration if the person does not get a hospital bed."
+          description="The likelihood that the person dies at the end of the illness duration if the number of available hospital beds is zero"
         />
         <control
           :max="1000"
@@ -61,7 +65,7 @@
           label="Contact tracker penetration"
           id="appTrackingPenetration"
           units="%"
-          description="The higher, the more the people have enabled contact tracking which allows them to be notified if they had contact to infected people."
+          description="The higher, the more the people have enabled contact tracking which allows them to be notified if they had contact to infected people. This reduces the likelihood of passing the virus."
         />
       </div>
       <div class="scenario-box">
@@ -103,6 +107,12 @@ export default {
     },
     socialDistancingRate(): number {
       return this.$store.state.socialDistancingRate;
+    },
+    width(): number {
+      return Math.min(window.innerWidth-20, 800);
+    },
+    height(): number {
+      return Math.min(window.innerWidth * 0.8, 400);
     }
   } as any,
   methods: {
@@ -129,6 +139,21 @@ export default {
   .scenario-box {
     width: 390px;
     padding: 0 0 0 14px;
+  }
+}
+
+@media only screen and (max-width: 500px) {
+  #controls {
+    flex-wrap: wrap;
+
+    .slider-box {
+      width: 95vw;
+    }
+
+    .scenario-box {
+      width: 95vw;
+      padding: 0;
+    }
   }
 }
 

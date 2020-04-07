@@ -41,6 +41,14 @@ div {
   margin: auto;
 }
 
+@media only screen and (max-width: 500px) {
+
+  #app {
+    width: auto;
+    font-size: 12px;
+  }
+}
+
 a,
 a:visited {
   color: #118ab2;

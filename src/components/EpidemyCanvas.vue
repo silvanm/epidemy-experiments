@@ -7,11 +7,11 @@ import { HealthState } from '@/Person';
       <div class="small">
         <div class="linechart-container">
           <line-chart
-                  :key="linechartKey"
+            :key="linechartKey"
             :chart-data="datacollection"
             :options="chartOptions()"
-            :width="390"
-            :height="270"
+            :width="linechartWidth()"
+            :height="linechartHeight()"
           ></line-chart>
         </div>
         <div class="keyfigures-container">
@@ -83,7 +83,7 @@ export default class EpidemyCanvas extends Vue {
   noChangeSince: number | null = null;
 
   // see https://michaelnthiessen.com/force-re-render/
-  linechartKey=0;
+  linechartKey = 0;
 
   constructor() {
     super();
@@ -192,6 +192,14 @@ export default class EpidemyCanvas extends Vue {
     this.noChangeSince = null;
     this.$emit("stopped");
     this.$store.commit("stop");
+  }
+
+  linechartWidth(): number {
+    return Math.min(window.innerWidth - 20, 390);
+  }
+
+  linechartHeight(): number {
+    return Math.min(window.innerWidth * 0.4, 270);
   }
 
   private drawBorder(): void {
@@ -365,6 +373,7 @@ export default class EpidemyCanvas extends Vue {
   flex-direction: row;
   flex-wrap: wrap;
 }
+
 canvas {
   border: 1px solid #ccc;
 }
@@ -375,5 +384,21 @@ canvas {
 .keyfigures-container {
   border-bottom: 1px solid #ccc;
   padding: 10px;
+}
+
+@media only screen and (max-width: 500px) {
+  #container {
+    width: 100vw;
+  }
+
+  .linechart-container {
+    padding-left: 0;
+    margin-left: -6px;
+  }
+
+  .keyfigures-container {
+    border-bottom: 0;
+    padding: 0;
+  }
 }
 </style>
